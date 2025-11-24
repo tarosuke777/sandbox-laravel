@@ -1,0 +1,31 @@
+# docker-compose.yml のサンプル (抜粋)
+version: '3.8'
+
+services:
+    # 1. PHP-FPM コンテナ (上記 Dockerfile を使用)
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        image: laravel-app:latest
+        container_name: laravel-app
+        volumes:
+        #  - C:\\dev\\videos:/var/www/html/storage/app/public/videos
+          - /mnt/c/dev/videos:/var/www/html/storage/app/public/videos:rw
+        #     - .:/var/www/html # 開発時はマウント推奨
+        #  - C:\\dev\\videos2:/var/www/html/public/videos
+
+    # 2. Nginx Webサーバーコンテナ
+    nginx:
+        build:
+            context: .
+            dockerfile: Dockerfile.nginx # 作成したNginx用Dockerfileを指定
+        container_name: laravel-nginx
+        ports:
+            - "8001:8001"
+        volumes:
+            # - .:/var/www/html # 開発時はマウント推奨
+            - ./nginx.conf:/etc/nginx/conf.d/default.conf # Nginx設定ファイルをコピー
+            - /mnt/c/dev/videos:/var/www/html/storage/app/public/videos:rw
+        depends_on:
+            - app # PHPコンテナが起動してからNginxを起動
